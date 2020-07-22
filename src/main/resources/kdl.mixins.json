@@ -1,0 +1,15 @@
+{
+  "required": true,
+  "package": "kdl.mixin",
+  "compatibilityLevel": "JAVA_8",
+  "mixins": [
+  ],
+  "client": [
+    "ModelLoaderMixin",
+    "SpriteAtlasTextureMixin",
+    "TranslationStorageMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

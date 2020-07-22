@@ -27,17 +27,17 @@ dependencies {
     //Fabric api
     modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
     modImplementation "net.fabricmc:fabric-language-kotlin:${project.fabric_kotlin_version}"
+}
 
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:${project.kotlin_version}"
-//    implementation "org.jetbrains.kotlin:kotlin-script-runtime:${project.kotlin_version}"
-//    implementation "org.jetbrains.kotlin:kotlin-script-util:${project.kotlin_version}"
-//    implementation "org.jetbrains.kotlin:kotlin-compiler-embeddable:${project.kotlin_version}"
-//    implementation "org.jetbrains.kotlin:kotlin-scripting-compiler-embeddable:${project.kotlin_version}"
-//    implementation "org.jetbrains.kotlin:kotlin-scripting-jvm-host-embeddable:${project.kotlin_version}"
-//    implementation "org.jetbrains.kotlin:kotlin-scripting-jvm-host:${project.kotlin_version}"
-//    implementation "org.jetbrains.kotlin:kotlin-scripting-jvm:${project.kotlin_version}"
-//    implementation "org.jetbrains.kotlin:kotlin-scripting-jsr223-embeddable:${project.kotlin_version}"
-    implementation "org.jetbrains.kotlin:kotlin-scripting-jsr223:${project.kotlin_version}"
+sourceSets {
+    main {
+        java {
+            srcDir 'src/examples/kotlin'
+        }
+        resources {
+            srcDir 'src/examples/resources'
+        }
+    }
 }
 
 processResources {

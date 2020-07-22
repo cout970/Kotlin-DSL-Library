@@ -1,27 +1,27 @@
 {
   "schemaVersion": 1,
-  "id": "kds",
+  "id": "kotlin_dsl_library",
   "version": "${version}",
-  "name": "KDS",
-  "description": "This is proof of concept",
+  "name": "KotlinDslLibrary",
+  "description": "",
   "authors": [
     "cout970"
   ],
   "contact": {
     "homepage": "http://cout970.com/",
-    "sources": "https://github.com/cout970/KDS"
+    "sources": "https://github.com/cout970/KotlinDslLibrary"
   },
   "license": "MIT",
-  "icon": "assets/kds/icon.png",
+  "icon": "assets/kdl/icon.png",
   "environment": "*",
   "entrypoints": {
     "main": [
-      "kds.KDSInit",
+      "kdl.KotlinDslLibrary",
       "example_mod.ExampleMod"
     ]
   },
   "mixins": [
-    "kds.mixins.json"
+    "kdl.mixins.json"
   ],
   "depends": {
     "fabricloader": ">=0.8.7",
