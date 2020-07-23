@@ -21,7 +21,7 @@ class ImageWidgetBuilder {
     var textureUVSize: Vec2f = vec2Of(textureSize)
 }
 
-fun WidgetBuilder<*>.image(config: ImageWidgetBuilder.() -> Unit) {
+fun WidgetHolder.image(config: ImageWidgetBuilder.() -> Unit) {
     val builder = ImageWidgetBuilder().also(config)
 
     widget<Renderable> {

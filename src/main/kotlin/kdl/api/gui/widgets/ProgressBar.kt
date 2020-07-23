@@ -24,7 +24,7 @@ class ProgressBarWidgetBuilder {
     var progressGetter: () -> Float = { 1f }
 }
 
-fun WidgetBuilder<*>.horizontalProgressBar(config: ProgressBarWidgetBuilder.() -> Unit) {
+fun WidgetHolder.horizontalProgressBar(config: ProgressBarWidgetBuilder.() -> Unit) {
     val builder = ProgressBarWidgetBuilder().also(config)
 
     widget<Renderable.Rect> {
@@ -52,7 +52,7 @@ fun WidgetBuilder<*>.horizontalProgressBar(config: ProgressBarWidgetBuilder.() -
     }
 }
 
-fun WidgetBuilder<*>.verticalProgressBar(config: ProgressBarWidgetBuilder.() -> Unit) {
+fun WidgetHolder.verticalProgressBar(config: ProgressBarWidgetBuilder.() -> Unit) {
     val builder = ProgressBarWidgetBuilder().also(config)
 
     widget<Renderable.Rect> {

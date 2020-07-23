@@ -11,7 +11,7 @@ object OnUse {
 
     fun openGui(guiId: Identifier): BlockOnUse.() -> Unit = {
         if (world.isServer) {
-            GuiManager.openScreen(guiId, player as ServerPlayerEntity)
+            GuiManager.openBlockScreen(guiId, player as ServerPlayerEntity, pos)
             result = ActionResult.CONSUME
         }
         result = ActionResult.SUCCESS

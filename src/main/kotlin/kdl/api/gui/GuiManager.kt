@@ -1,6 +1,7 @@
 package kdl.api.gui
 
 import kdl.internal.gui.KDLScreenHandler
+import kdl.internal.registries.InstanceManager
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.entity.player.PlayerInventory
@@ -10,6 +11,7 @@ import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.Text
 import net.minecraft.text.TranslatableText
 import net.minecraft.util.Identifier
+import net.minecraft.util.math.BlockPos
 import org.apache.logging.log4j.LogManager
 
 object GuiManager {
@@ -30,7 +32,7 @@ object GuiManager {
         }
     }
 
-    fun openScreen(guiId: Identifier, player: ServerPlayerEntity) {
+    fun openScreen(guiId: Identifier, player: ServerPlayerEntity, vararg params: Any?) {
         val config = guiConfigs[guiId]
 
         if (config == null) {
@@ -42,14 +44,44 @@ object GuiManager {
             var instance: KDLScreenHandler? = null
 
             override fun createMenu(syncId: Int, inv: PlayerInventory, player: PlayerEntity): ScreenHandler {
-                return KDLScreenHandler(config, syncId, inv).also { instance = it }
+                return InstanceManager.newKDLScreenHandler(config, syncId, inv, null).also { instance = it }
             }
 
             override fun writeScreenOpeningData(player: ServerPlayerEntity, buf: PacketByteBuf) {
-                config.screenHandlerConfig.serverWritePacket?.invoke(instance!!, player, buf)
+                buf.writeByte(0)
+                config.screenHandlerConfig.serverWritePacket?.invoke(instance!!.ctx, player, params, buf)
             }
 
-            override fun getDisplayName(): Text = TranslatableText("gui.${guiId.namespace}.${guiId.path}")
+            override fun getDisplayName(): Text {
+                return config.screenConfig.title ?: TranslatableText("gui.${guiId.namespace}.${guiId.path}")
+            }
+        })
+    }
+
+    fun openBlockScreen(guiId: Identifier, player: ServerPlayerEntity, pos: BlockPos, vararg params: Any?) {
+        val config = guiConfigs[guiId]
+
+        if (config == null) {
+            logger.warn("Attempt to open unregistered gui with id: $guiId")
+            return
+        }
+
+        player.openHandledScreen(object : ExtendedScreenHandlerFactory {
+            var instance: KDLScreenHandler? = null
+
+            override fun createMenu(syncId: Int, inv: PlayerInventory, player: PlayerEntity): ScreenHandler {
+                return InstanceManager.newKDLScreenHandler(config, syncId, inv, pos).also { instance = it }
+            }
+
+            override fun writeScreenOpeningData(player: ServerPlayerEntity, buf: PacketByteBuf) {
+                buf.writeByte(1)
+                buf.writeBlockPos(pos)
+                config.screenHandlerConfig.serverWritePacket?.invoke(instance!!.ctx, player, params, buf)
+            }
+
+            override fun getDisplayName(): Text {
+                return config.screenConfig.title ?: TranslatableText("gui.${guiId.namespace}.${guiId.path}")
+            }
         })
     }
 }

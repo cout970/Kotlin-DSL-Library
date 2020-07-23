@@ -12,7 +12,6 @@ import kdl.api.util.math.xi
 import kdl.api.util.math.yi
 import kdl.api.util.r
 import net.minecraft.client.MinecraftClient
-import net.minecraft.client.gui.screen.Screen
 import net.minecraft.client.render.BufferRenderer
 import net.minecraft.client.render.Tessellator
 import net.minecraft.client.render.VertexFormats
@@ -24,12 +23,12 @@ import kotlin.math.cos
 import kotlin.math.max
 import kotlin.math.sin
 
-class KDLGuiRenderer(val screen: Screen) :
+class KDLGuiRenderer(val screen: KDLScreen) :
     GuiRenderer {
     val textureManager = MinecraftClient.getInstance().textureManager
     override var matrices = MatrixStack()
     var parentPos: Vec2f = Vec2f.ZERO
-    var parentSize: Vec2f = Vec2f.ZERO
+    var parentSize: Vec2f = Vec2f.SOUTH_EAST_UNIT
 
     override fun draw(shape: Renderable) {
         when (shape) {
@@ -224,10 +223,10 @@ class KDLGuiRenderer(val screen: Screen) :
     override fun getPos(pos: Pos): Vec2f = when (pos) {
         is FixedPos -> pos.vec
         is CenterRelPos -> pos.vec + Vec2f(
-            screen.width * 0.5f,
-            screen.height * 0.5f
+            (screen.containerWidth / 2).toFloat(),
+            (screen.containerHeight / 2).toFloat()
         )
-        is ParentRelPos -> pos.vec + parentPos
+        is ParentRelPos -> (pos.vec + parentPos)
     }
 
     override fun getSize(size: Size): Vec2f = when (size) {

@@ -18,6 +18,7 @@ import net.minecraft.entity.player.PlayerInventory
 import net.minecraft.item.Item
 import net.minecraft.text.Text
 import net.minecraft.util.Identifier
+import net.minecraft.util.math.BlockPos
 
 /**
  * This object controls the creation of instances for Blocks, Items, BlockEntities, etc.
@@ -95,8 +96,8 @@ object InstanceManager {
         return KDLBlockItem(block, settings)
     }
 
-    fun newKDLScreenHandler(config: GuiBuilder, syncId: Int, playerInv: PlayerInventory): KDLScreenHandler {
-        return KDLScreenHandler(config, syncId, playerInv)
+    fun newKDLScreenHandler(config: GuiBuilder, syncId: Int, playerInv: PlayerInventory, pos: BlockPos?): KDLScreenHandler {
+        return KDLScreenHandler(config, syncId, playerInv, pos)
     }
 
     fun newKDLScreen(config: GuiBuilder, handler: KDLScreenHandler, playerInv: PlayerInventory, title: Text): KDLScreen {

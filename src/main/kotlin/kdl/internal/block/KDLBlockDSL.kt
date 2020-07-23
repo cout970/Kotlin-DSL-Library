@@ -108,9 +108,11 @@ class KDLBlockDSL(private val ref: ModReference) : BlockDSL {
         val clientFactory =
             ScreenHandlerRegistry.ExtendedClientHandlerFactory<KDLScreenHandler> { syncId, playerInv, buf ->
                 val latestConfig = GuiManager.guiConfigs[guiId]!!
+                val pos = if (buf.readByte() != 0.toByte()) buf.readBlockPos() else null
 
-                InstanceManager.newKDLScreenHandler(latestConfig, syncId, playerInv).also {
-                    latestConfig.screenHandlerConfig.clientReadPacket?.invoke(it, playerInv, buf)
+                InstanceManager.newKDLScreenHandler(latestConfig, syncId, playerInv, pos).also {
+
+                    latestConfig.screenHandlerConfig.clientReadPacket?.invoke(it.ctx, buf)
                 }
             }
 

@@ -12,11 +12,17 @@ sealed class Pos {
     }
 }
 
-data class FixedPos(val vec: Vec2f) : Pos()
+data class FixedPos(val vec: Vec2f) : Pos() {
+    override fun toString(): String = "FixedPos(${vec.x}, ${vec.y})"
+}
 
-data class CenterRelPos(val vec: Vec2f) : Pos()
+data class CenterRelPos(val vec: Vec2f) : Pos() {
+    override fun toString(): String = "CenterRelPos(${vec.x}, ${vec.y})"
+}
 
-data class ParentRelPos(val vec: Vec2f) : Pos()
+data class ParentRelPos(val vec: Vec2f) : Pos() {
+    override fun toString(): String = "ParentRelPos(${vec.x}, ${vec.y})"
+}
 
 sealed class Size {
     @Suppress("NOTHING_TO_INLINE")
@@ -27,11 +33,17 @@ sealed class Size {
     }
 }
 
-data class FixedSize(val vec: Vec2f) : Size()
+data class FixedSize(val vec: Vec2f) : Size() {
+    override fun toString(): String = "FixedSize(${vec.x}, ${vec.y})"
+}
 
-data class ScreenRelSize(val vec: Vec2f) : Size()
+data class ScreenRelSize(val vec: Vec2f) : Size() {
+    override fun toString(): String = "ScreenRelSize(${vec.x}, ${vec.y})"
+}
 
-data class ParentRelSize(val vec: Vec2f) : Size()
+data class ParentRelSize(val vec: Vec2f) : Size() {
+    override fun toString(): String = "ParentRelSize(${vec.x}, ${vec.y})"
+}
 
 /**
  * Horizontal Alignment
