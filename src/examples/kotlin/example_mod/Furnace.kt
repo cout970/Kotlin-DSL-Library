@@ -146,6 +146,7 @@ fun GuiBuilder.furnaceGui() {
                     text = LiteralText("Furnace")
                     pos = Pos.parentRelative(67, 6)
                 }
+
                 textLabel {
                     text = LiteralText("Inventory")
                     pos = Pos.parentRelative(8, 72)

@@ -56,7 +56,7 @@ class KDLGuiRenderer(val screen: KDLScreen) :
                 shape.items.forEach { draw(it) }
             }
             is Renderable.Custom -> {
-                shape.func(screen.ctx, this)
+                shape.func(screen.widgetCtx, this)
             }
         }
     }

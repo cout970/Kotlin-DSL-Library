@@ -3,16 +3,14 @@ package kdl.api.gui.widgets
 import kdl.api.KDL
 import kdl.api.gui.GuiRenderer
 import kdl.api.gui.Pos
+import kdl.api.gui.ScreenCtx
 import kdl.api.gui.Size
-import net.minecraft.client.gui.screen.Screen
-import net.minecraft.screen.ScreenHandler
 import net.minecraft.util.Identifier
 import java.util.*
 
 // Context for the widget
 data class WidgetCtx(
-    val screen: Screen,
-    val handler: ScreenHandler,
+    val screenCtx: ScreenCtx,
     val root: Widget<Unit>
 )
 

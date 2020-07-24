@@ -3,6 +3,7 @@ package kdl.internal.gui
 import kdl.KDL_ID
 import kdl.api.gui.GuiManager
 import kdl.api.gui.ScreenBuilder
+import kdl.api.gui.ScreenCtx
 import kdl.api.gui.widgets.*
 import kdl.api.util.id
 import kdl.api.util.math.plus
@@ -19,9 +20,13 @@ import kotlin.collections.LinkedHashMap
 class KDLScreen(val config: ScreenBuilder, handler: KDLScreenHandler, playerInv: PlayerInventory, title: Text) :
     HandledScreen<KDLScreenHandler>(handler, playerInv, title) {
 
+    val screenCtx: ScreenCtx
+        get() = ScreenCtx(this, handler.ctx)
+
     @Suppress("UNCHECKED_CAST")
-    val ctx: WidgetCtx
-        get() = WidgetCtx(this, handler, root as Widget<Unit>)
+    val widgetCtx: WidgetCtx
+        get() = WidgetCtx(screenCtx, root as Widget<Unit>)
+
 
     val renderer = KDLGuiRenderer(this)
     val root: WidgetInstance
@@ -30,12 +35,12 @@ class KDLScreen(val config: ScreenBuilder, handler: KDLScreenHandler, playerInv:
     val containerHeight: Int get() = super.backgroundHeight
 
     init {
-        config.onInit?.invoke(this, playerInv, title)
+        config.onInit?.invoke(screenCtx, playerInv, title)
 
         val builder = WidgetBuilder<Unit>()
         builder.widgetType = id(KDL_ID, "root")
         builder.label = "Root widget"
-        config.widgets.execute { it(builder, this) }
+        config.widgets.execute { it(builder, screenCtx) }
 
         root = create(builder)
     }
@@ -45,7 +50,7 @@ class KDLScreen(val config: ScreenBuilder, handler: KDLScreenHandler, playerInv:
         renderer.matrices = matrices
         renderer.parentPos = Vec2f(x.toFloat(), y.toFloat())
         renderer.parentSize = Vec2f(containerWidth.toFloat(), containerHeight.toFloat())
-        root.onRender(ctx, renderer)
+        root.onRender(widgetCtx, renderer)
         super.render(matrices, mouseX, mouseY, delta)
         drawMouseoverTooltip(matrices, mouseX, mouseY)
     }
@@ -78,7 +83,7 @@ class KDLScreen(val config: ScreenBuilder, handler: KDLScreenHandler, playerInv:
     }
 
     override fun onClose() {
-        config.onClose?.invoke(this)
+        config.onClose?.invoke(screenCtx)
         super.onClose()
     }
 

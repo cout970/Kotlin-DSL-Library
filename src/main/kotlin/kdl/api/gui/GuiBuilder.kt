@@ -3,7 +3,7 @@ package kdl.api.gui
 import kdl.api.KDL
 import kdl.api.gui.widgets.WidgetBuilder
 import kdl.api.util.Deferred
-import net.minecraft.client.gui.screen.Screen
+import net.minecraft.client.gui.screen.ingame.HandledScreen
 import net.minecraft.entity.player.PlayerInventory
 import net.minecraft.inventory.Inventory
 import net.minecraft.item.ItemStack
@@ -62,14 +62,19 @@ class ScreenHandlerBuilder {
     }
 }
 
+data class ScreenCtx(
+    val screen: HandledScreen<*>,
+    val handlerCtx: ScreenHandlerCtx
+)
+
 @KDL
 class ScreenBuilder {
     var title: Text? = null
-    var onInit: ((Screen, PlayerInventory, Text) -> Unit)? = null
-    var onClose: ((Screen) -> Unit)? = null
-    val widgets = Deferred<WidgetBuilder<Unit>.(Screen) -> Unit>()
+    var onInit: (ScreenCtx.(PlayerInventory, Text) -> Unit)? = null
+    var onClose: (ScreenCtx.() -> Unit)? = null
+    val widgets = Deferred<WidgetBuilder<Unit>.(ScreenCtx) -> Unit>()
 
-    fun widgets(config: WidgetBuilder<Unit>.(Screen) -> Unit) {
+    fun widgets(config: WidgetBuilder<Unit>.(ScreenCtx) -> Unit) {
         widgets.onExecution(config)
     }
 }
