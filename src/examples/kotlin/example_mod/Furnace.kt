@@ -110,9 +110,6 @@ fun GuiBuilder.furnaceGui() {
 
         widgets {
             container {
-                pos = Pos.centerRelative(-88, -83)
-                size = Size.fixed(176, 166)
-
                 image {
                     label = "Background"
                     pos = Pos.parentRelative(0, 0)

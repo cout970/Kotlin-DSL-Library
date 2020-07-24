@@ -7,8 +7,8 @@ import kdl.api.util.id
 
 class ContainerWidgetBuilder : WidgetHolder {
     var label: String = "Container"
-    var pos: Pos = Pos.centerRelative(-50, -50)
-    var size: Size = Size.fixed(100, 100)
+    var pos: Pos = Pos.centerRelative(-88, -83)
+    var size: Size = Size.fixed(176, 166)
     override val children = mutableListOf<WidgetBuilder<*>>()
 }
 
