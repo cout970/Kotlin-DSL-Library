@@ -1,42 +1,44 @@
 package kdl.internal.block.blockentity
 
 import kdl.api.block.BlockEntityBuilder
-import kdl.api.block.blockentity.DefaultModuleState
-import kdl.api.block.blockentity.ModuleBuilder
-import kdl.api.block.blockentity.ModuleCtx
-import kdl.api.block.blockentity.ModuleState
+import kdl.api.block.blockentity.*
 import kdl.api.util.NBTSerialization
 import net.minecraft.block.BlockState
 import net.minecraft.block.entity.BlockEntity
 import net.minecraft.block.entity.BlockEntityType
 import net.minecraft.nbt.CompoundTag
+import net.minecraft.network.packet.s2c.play.BlockEntityUpdateS2CPacket
+import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.util.Identifier
 import net.minecraft.util.Tickable
 import net.minecraft.util.math.BlockPos
 import net.minecraft.util.registry.Registry
 import net.minecraft.world.World
 
-open class KDLBlockEntity(val config: BlockEntityBuilder) : BlockEntity(type(config)) {
-    /**
-     * Be careful extending this class, moduleManager may not be fully configured in the subclass constructor
-     */
-    @Suppress("LeakingThis")
-    val moduleManager = KDLModuleManager(this)
+open class KDLBlockEntity(val config: BlockEntityBuilder) : BlockEntity(type(config)), ModuleManager {
+
+    override val modules = mutableMapOf<Identifier, KDLModule>()
+
+    override val blockstate: BlockState get() = cachedState
+
+    override var removed: Boolean
+        get() = isRemoved
+        set(value) {
+            if (value) markRemoved() else cancelRemoval()
+        }
 
     val ctx: ModuleCtx
-        get() = ModuleCtx(world!!, pos, moduleManager)
+        get() = ModuleCtx(
+            world = world ?: error("BlockEntity world is not set"),
+            pos = pos,
+            moduleManager = this
+        )
 
     init {
         config.modules.forEach { (id, dsl) ->
-            val module = dsl.onCreate?.invoke() ?: DefaultModuleState
-            moduleManager.modules[id] = module
-        }
-    }
-
-    fun init() {
-        if (!hasWorld()) return
-        modules { _, builder, state ->
-            builder.onInit?.let { func -> func(ctx, state) }
+            val state = dsl.onCreate?.invoke() ?: Unit
+            @Suppress("UNCHECKED_CAST")
+            modules[id] = KDLModule(state, dsl as ModuleDefinition<Any>)
         }
     }
 
@@ -45,9 +47,16 @@ open class KDLBlockEntity(val config: BlockEntityBuilder) : BlockEntity(type(con
         init()
     }
 
+    fun init() {
+        if (!hasWorld()) return
+        modules.forEach { (_, mod) ->
+            mod.def.onInit?.invoke(ctx, mod.state)
+        }
+    }
+
     fun onBreak() {
-        modules { _, builder, state ->
-            builder.onBreak?.let { func -> func(ctx, state) }
+        modules.forEach { (_, mod) ->
+            mod.def.onBreak?.invoke(ctx, mod.state)
         }
     }
 
@@ -56,9 +65,14 @@ open class KDLBlockEntity(val config: BlockEntityBuilder) : BlockEntity(type(con
     }
 
     override fun toTag(tag: CompoundTag): CompoundTag {
-        modules { id, _, state ->
-            val persistentState = state.persistentState ?: return@modules
-            val value = NBTSerialization.serialize(persistentState)
+        modules.forEach { (id, mod) ->
+            var state: Any = mod.state
+
+            if (state is PersistentState<*>) {
+                state = state.store()
+            }
+
+            val value = NBTSerialization.serialize(state)
             tag.put(id.toString(), value)
         }
         return super.toTag(tag)
@@ -66,27 +80,76 @@ open class KDLBlockEntity(val config: BlockEntityBuilder) : BlockEntity(type(con
 
     override fun fromTag(blockstate: BlockState, tag: CompoundTag) {
         super.fromTag(blockstate, tag)
-        modules { id, _, state ->
-            if (tag.contains(id.toString())) {
-                state.persistentState = NBTSerialization.deserialize(tag.getCompound(id.toString()))
+        modules.forEach { (id, mod) ->
+            if (!tag.contains(id.toString())) return@forEach
+
+            val nbtValue = tag.getCompound(id.toString())
+            val value = NBTSerialization.deserialize(nbtValue)
+
+            if (mod.state is PersistentState<*>) {
+                @Suppress("UNCHECKED_CAST")
+                (mod.state as PersistentState<Any>).restore(value)
+            } else {
+                mod.state = value
             }
         }
     }
 
-    inline fun modules(func: (id: Identifier, builder: ModuleBuilder<ModuleState>, state: ModuleState) -> Unit) {
-        config.modules.forEach { (id, dsl) ->
-            val state = moduleManager.modules[id] ?: return@forEach
-            @Suppress("UNCHECKED_CAST")
-            func(id, dsl as ModuleBuilder<ModuleState>, state)
+    override fun sendUpdateToNearPlayers() {
+        val world = world ?: return
+        val pos = pos ?: return
+        if (world.isClient) return
+
+        toUpdatePacket()?.let { packet ->
+            world.players
+                .map { it as ServerPlayerEntity }
+                .filter { it.squaredDistanceTo(pos.x.toDouble(), pos.y.toDouble(), pos.z.toDouble()) < (64 * 64) }
+                .forEach { it.networkHandler.sendPacket(packet) }
         }
     }
+
+    override fun toUpdatePacket(): BlockEntityUpdateS2CPacket? {
+        val tag = toInitialChunkDataTag()
+
+        modules.forEach { (id, mod) ->
+            if (mod.state is SyncState<*>) {
+                val value = (mod.state as SyncState<Any>).toSend()
+
+                if (value != Unit) {
+                    tag.put(id.toString(), NBTSerialization.serialize(value))
+                }
+            }
+        }
+        return BlockEntityUpdateS2CPacket(pos, 0, tag)
+    }
+
+    fun receiveUpdatePacket(packet: BlockEntityUpdateS2CPacket) {
+        val tag = packet.compoundTag ?: return
+
+        modules.forEach { (id, mod) ->
+            if (mod.state is SyncState<*>) {
+                val nbtValue = tag.getCompound(id.toString())
+                val value = NBTSerialization.deserialize(nbtValue)
+                (mod.state as SyncState<Any>).onReceive(value)
+            }
+        }
+    }
+
+    override fun markDirty() {
+        super.markDirty()
+    }
 }
+
+data class KDLModule(
+    override var state: Any,
+    override val def: ModuleDefinition<Any>
+) : Module<Any>
 
 open class KDLTickableBlockEntity(config: BlockEntityBuilder) : KDLBlockEntity(config), Tickable {
 
     override fun tick() {
-        modules { _, builder, state ->
-            builder.onTick?.let { func -> func(ctx, state) }
+        modules.forEach { (_, mod) ->
+            mod.def.onTick?.invoke(ctx, mod.state)
         }
     }
 }

@@ -2,7 +2,6 @@ package kdl.api.block
 
 import kdl.api.KDL
 import kdl.api.block.blockentity.ModuleBuilder
-import kdl.api.block.blockentity.ModuleState
 import kdl.api.gui.GuiBuilder
 import kdl.api.item.ItemBuilder
 import net.minecraft.util.Identifier
@@ -101,11 +100,11 @@ class BlockEntityBuilder {
     var renderDistance: Double = 64.0
     var type: Identifier? = null
 
-    fun <T : ModuleState> module(func: ModuleBuilder<T>.() -> Unit) {
+    fun <T> module(func: ModuleBuilder<T>.() -> Unit) {
         val dsl = ModuleBuilder<T>().apply(func)
-        if (dsl.id == null) {
+        if (dsl.moduleType == null) {
             error("Module defined without id")
         }
-        modules[dsl.id!!] = dsl
+        modules[dsl.type] = dsl
     }
 }

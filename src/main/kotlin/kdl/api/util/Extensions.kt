@@ -1,6 +1,6 @@
 package kdl.api.util
 
-import kdl.api.block.blockentity.ModuleState
+import kdl.api.block.blockentity.Module
 import kdl.internal.block.blockentity.KDLBlockEntity
 import net.minecraft.block.Block
 import net.minecraft.block.BlockState
@@ -37,7 +37,8 @@ fun World.dropItem(item: ItemStack, pos: Vec3d): ItemEntity {
     return ItemEntity(this, pos.x, pos.y, pos.z, item).also { spawnEntity(it) }
 }
 
-fun <T : ModuleState> BlockEntity.getModule(id: Identifier): T? {
+fun <T: Any> BlockEntity.getModule(id: Identifier): Module<T>? {
     val tile = this as? KDLBlockEntity ?: return null
-    return tile.moduleManager.modules[id] as T
+    @Suppress("UNCHECKED_CAST")
+    return tile.modules[id] as? Module<T>
 }

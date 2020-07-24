@@ -17,7 +17,7 @@ fun BlockEntityBuilder.customModule() {
     data class Counter(var count: Int = 0) : Serializable, ModuleState
 
     module<Counter> {
-        id = ExampleModRef.id("custom_module")
+        moduleType = ExampleModRef.id("custom_module")
         onCreate = { Counter() }
         onTick = { counter ->
             val enumProperty = moduleManager.blockstate.findProperty<States>("option")!!

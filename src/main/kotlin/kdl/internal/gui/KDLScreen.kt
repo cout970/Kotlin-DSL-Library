@@ -19,7 +19,10 @@ import kotlin.collections.LinkedHashMap
 class KDLScreen(val config: ScreenBuilder, handler: KDLScreenHandler, playerInv: PlayerInventory, title: Text) :
     HandledScreen<KDLScreenHandler>(handler, playerInv, title) {
 
-    val ctx: WidgetCtx get() = WidgetCtx(this, handler, root as Widget<Unit>)
+    @Suppress("UNCHECKED_CAST")
+    val ctx: WidgetCtx
+        get() = WidgetCtx(this, handler, root as Widget<Unit>)
+
     val renderer = KDLGuiRenderer(this)
     val root: WidgetInstance
 
@@ -39,14 +42,12 @@ class KDLScreen(val config: ScreenBuilder, handler: KDLScreenHandler, playerInv:
 
     override fun render(matrices: MatrixStack, mouseX: Int, mouseY: Int, delta: Float) {
         this.renderBackground(matrices)
-        super.render(matrices, mouseX, mouseY, delta)
-    }
-
-    override fun drawForeground(matrices: MatrixStack, mouseX: Int, mouseY: Int) {
         renderer.matrices = matrices
-        renderer.parentPos = Vec2f(0f, 0f)
+        renderer.parentPos = Vec2f(x.toFloat(), y.toFloat())
         renderer.parentSize = Vec2f(containerWidth.toFloat(), containerHeight.toFloat())
         root.onRender(ctx, renderer)
+        super.render(matrices, mouseX, mouseY, delta)
+        drawMouseoverTooltip(matrices, mouseX, mouseY)
     }
 
     fun create(builder: WidgetBuilder<*>): WidgetInstance {
@@ -85,6 +86,7 @@ class KDLScreen(val config: ScreenBuilder, handler: KDLScreenHandler, playerInv:
         return false
     }
 
+    override fun drawForeground(matrices: MatrixStack, mouseX: Int, mouseY: Int) = Unit
     override fun drawBackground(matrices: MatrixStack?, delta: Float, mouseX: Int, mouseY: Int) = Unit
 }
 

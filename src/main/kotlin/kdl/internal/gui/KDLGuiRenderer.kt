@@ -12,9 +12,11 @@ import kdl.api.util.math.xi
 import kdl.api.util.math.yi
 import kdl.api.util.r
 import net.minecraft.client.MinecraftClient
+import net.minecraft.client.font.TextRenderer
 import net.minecraft.client.render.BufferRenderer
 import net.minecraft.client.render.Tessellator
 import net.minecraft.client.render.VertexFormats
+import net.minecraft.client.texture.TextureManager
 import net.minecraft.client.util.math.MatrixStack
 import net.minecraft.util.math.Vec2f
 import org.lwjgl.opengl.GL11
@@ -25,7 +27,8 @@ import kotlin.math.sin
 
 class KDLGuiRenderer(val screen: KDLScreen) :
     GuiRenderer {
-    val textureManager = MinecraftClient.getInstance().textureManager
+    override val textureManager: TextureManager = MinecraftClient.getInstance().textureManager
+    override val textRenderer: TextRenderer = MinecraftClient.getInstance().textRenderer
     override var matrices = MatrixStack()
     var parentPos: Vec2f = Vec2f.ZERO
     var parentSize: Vec2f = Vec2f.SOUTH_EAST_UNIT
@@ -47,10 +50,13 @@ class KDLGuiRenderer(val screen: KDLScreen) :
 
                 MinecraftClient.getInstance()
                     .textRenderer
-                    .draw(matrices, shape.string, posVec.x, posVec.y, shape.color.rgb)
+                    .draw(matrices, shape.string, posVec.x, posVec.y, shape.color.rgba)
             }
             is Renderable.Group -> {
                 shape.items.forEach { draw(it) }
+            }
+            is Renderable.Custom -> {
+                shape.func(screen.ctx, this)
             }
         }
     }

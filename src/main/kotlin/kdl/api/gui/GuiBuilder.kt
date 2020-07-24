@@ -13,7 +13,7 @@ import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.Text
 import net.minecraft.util.Identifier
 import net.minecraft.util.math.BlockPos
-import net.minecraft.world.WorldView
+import net.minecraft.world.World
 
 @KDL
 class GuiBuilder {
@@ -33,8 +33,9 @@ class GuiBuilder {
 data class ScreenHandlerCtx(
     val screenHandler: ScreenHandler,
     val playerInventory: PlayerInventory,
-    val world: WorldView,
-    val blockPos: BlockPos?
+    val world: World,
+    val blockPos: BlockPos?,
+    val blockInventory: Inventory?
 )
 
 @KDL
@@ -76,7 +77,15 @@ class ScreenBuilder {
 
 @KDL
 interface SlotBuilder {
-    fun slot(inv: Inventory, index: Int, posX: Int = 0, posY: Int = 0)
+    fun slot(
+        inv: Inventory,
+        index: Int,
+        posX: Int = 0,
+        posY: Int = 0,
+        canTake: Boolean = true,
+        canPlace: Boolean = true,
+        filter: (ItemStack) -> Boolean = { true }
+    )
 
     fun slotArea(inv: Inventory, startIndex: Int, cols: Int = 1, rows: Int = 1, posX: Int = 0, posY: Int = 0)
 

@@ -1,9 +1,13 @@
 package kdl.internal.gui
 
+import kdl.KDL_ID
 import kdl.api.gui.GuiBuilder
 import kdl.api.gui.RegionBuilder
 import kdl.api.gui.ScreenHandlerCtx
 import kdl.api.gui.SlotBuilder
+import kdl.api.module.InventoryState
+import kdl.api.util.getModule
+import kdl.api.util.id
 import kdl.internal.registries.Registries
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.entity.player.PlayerInventory
@@ -21,8 +25,21 @@ class KDLScreenHandler(
     var blockPos: BlockPos? = null
 ) : ScreenHandler(typeOf(config), syncId), SlotBuilder, RegionBuilder {
 
+    val blockInventory: Inventory? = blockPos?.let {
+        playerInventory.player.world
+            .getBlockEntity(blockPos)
+            ?.getModule<InventoryState>(id(KDL_ID, "inventory"))
+            ?.state
+    }
+
     val ctx: ScreenHandlerCtx
-        get() = ScreenHandlerCtx(this, playerInventory, playerInventory.player.world, blockPos)
+        get() = ScreenHandlerCtx(
+            this,
+            playerInventory,
+            playerInventory.player.world,
+            blockPos,
+            blockInventory
+        )
 
     val config = config.screenHandlerConfig
     val regions = mutableListOf<Region>()
@@ -44,8 +61,16 @@ class KDLScreenHandler(
 
     override fun canUse(player: PlayerEntity?): Boolean = true
 
-    override fun slot(inv: Inventory, index: Int, posX: Int, posY: Int) {
-        addSlot(KDLSlot(inv, index, posX, posY))
+    override fun slot(
+        inv: Inventory,
+        index: Int,
+        posX: Int,
+        posY: Int,
+        canTake: Boolean,
+        canPlace: Boolean,
+        filter: (ItemStack) -> Boolean
+    ) {
+        addSlot(KDLSlot(inv, index, posX, posY, canTake, canPlace, filter))
     }
 
     override fun slotArea(inv: Inventory, startIndex: Int, cols: Int, rows: Int, posX: Int, posY: Int) {
@@ -73,6 +98,41 @@ class KDLScreenHandler(
 
     override fun region(start: Int, size: Int, reverse: Boolean, name: String, filter: (Int, ItemStack) -> Boolean) {
         regions += Region(start, size, reverse, name, filter)
+    }
+
+    override fun transferSlot(player: PlayerEntity?, index: Int): ItemStack? {
+        val slot = slots[index]
+        if (slot == null || !slot.hasStack()) return ItemStack.EMPTY
+
+        val slotStack: ItemStack = slot.stack
+        val copy = slotStack.copy()
+        var inserted = false
+
+        for (reg in regions) {
+            val start = reg.start
+            val end = reg.start + reg.size
+
+            if (index !in start until end && reg.filter(index, slotStack)) {
+                if (insertItem(slotStack, start, end, reg.reverse)) {
+                    inserted = true
+                    slot.onStackChanged(slotStack, copy)
+                    break
+                }
+            }
+        }
+
+        if (!inserted) return ItemStack.EMPTY
+
+        if (slotStack.isEmpty) {
+            slot.stack = ItemStack.EMPTY
+        } else {
+            slot.markDirty()
+        }
+        if (slotStack.count == copy.count) {
+            return ItemStack.EMPTY
+        }
+        slot.onTakeItem(player, slotStack)
+        return copy
     }
 
     data class Region(

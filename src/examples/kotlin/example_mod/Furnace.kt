@@ -1,22 +1,19 @@
 package example_mod
 
-import kdl.KDL_ID
 import kdl.api.block.OnUse
 import kdl.api.gui.GuiBuilder
 import kdl.api.gui.Pos
 import kdl.api.gui.Size
-import kdl.api.gui.widgets.container
-import kdl.api.gui.widgets.horizontalProgressBar
-import kdl.api.gui.widgets.image
-import kdl.api.gui.widgets.verticalProgressBar
+import kdl.api.gui.widgets.*
 import kdl.api.item.BlockCubeModel
 import kdl.api.model.Transformation
-import kdl.api.module.InventoryState
 import kdl.api.module.inventory
-import kdl.api.util.getModule
 import kdl.api.util.id
 import kdl.api.util.math.vec2Of
 import kdl.api.util.withProperty
+import net.minecraft.block.entity.AbstractFurnaceBlockEntity
+import net.minecraft.inventory.SimpleInventory
+import net.minecraft.recipe.RecipeType
 import net.minecraft.text.LiteralText
 
 fun furnaceBlock() = ExampleModRef.blocks {
@@ -86,22 +83,29 @@ fun GuiBuilder.furnaceGui() {
     screenHandler {
 
         slots { ctx ->
-            val inv = ctx.world.getBlockEntity(ctx.blockPos!!)
-                ?.getModule<InventoryState>(id(KDL_ID, "inventory"))
-
-            if (inv != null) {
-                slot(inv.inventory, 0, 56, 17)
-                slot(inv.inventory, 1, 56, 53)
-                slot(inv.inventory, 2, 116, 35)
+            if (ctx.blockInventory != null) {
+                slot(ctx.blockInventory, 0, 56, 17)
+                slot(ctx.blockInventory, 1, 56, 53)
+                slot(ctx.blockInventory, 2, 116, 35, canPlace = false)
             }
 
             playerInventory()
         }
 
-        regions {
-            region(0, 1, name = "Input")
-            region(1, 1, name = "Fuel")
+        regions { ctx ->
+            region(0, 1, name = "Input", filter = { _, stack ->
+                // Check if the item has a smelting recipe
+                ctx.world.recipeManager
+                    .getFirstMatch(RecipeType.SMELTING, SimpleInventory(stack), ctx.world)
+                    .isPresent
+            })
+            region(1, 1, name = "Fuel", filter = { _, stack ->
+                // Check if the item is fuel
+                AbstractFurnaceBlockEntity.canUseAsFuel(stack)
+            })
             region(2, 1, name = "Output")
+            region(3, 27, name = "PlayerInventoryMain")
+            region(30, 9, name = "PlayerInventoryHotbar")
         }
     }
 
@@ -120,7 +124,7 @@ fun GuiBuilder.furnaceGui() {
 
                 horizontalProgressBar {
                     label = "Cooking progress"
-                    pos = Pos.centerRelative(-9, -49)
+                    pos = Pos.parentRelative(79, 34)
                     size = Size.fixed(24, 17)
                     texture = id("minecraft", "textures/gui/container/furnace.png")
                     textureUV = vec2Of(176, 14)
@@ -130,12 +134,21 @@ fun GuiBuilder.furnaceGui() {
 
                 verticalProgressBar {
                     label = "Burning time"
-                    pos = Pos.centerRelative(-31, -46)
+                    pos = Pos.parentRelative(57, 37)
                     size = Size.fixed(14, 14)
                     texture = id("minecraft", "textures/gui/container/furnace.png")
                     textureUV = vec2Of(176, 0)
                     textureUVSize = vec2Of(14, 14)
                     progressGetter = { 0.75f /* Temp */ }
+                }
+
+                textLabel {
+                    text = LiteralText("Furnace")
+                    pos = Pos.parentRelative(67, 6)
+                }
+                textLabel {
+                    text = LiteralText("Inventory")
+                    pos = Pos.parentRelative(8, 72)
                 }
             }
         }

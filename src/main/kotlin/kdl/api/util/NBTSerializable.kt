@@ -6,16 +6,16 @@ import net.minecraft.nbt.CompoundTag
 /**
  * This interface marks classes that can be serialized and deserialized to NBT using reflection.
  *
- * A constructor will all fields is required to create a new instances
+ * A constructor will all fields is required to create new instances
  */
 interface NBTSerializable
 
 /**
  * Allows custom serializers for any class
  */
-interface NBTSerializer {
-    fun serialize(value: Any): CompoundTag
-    fun deserialize(tag: CompoundTag): Any
+interface NBTSerializer<T> {
+    fun serialize(value: T): CompoundTag
+    fun deserialize(tag: CompoundTag): T
 }
 
 object NBTSerialization {
@@ -24,7 +24,7 @@ object NBTSerialization {
      *
      * You can add your own serializers to the map
      */
-    val customSerializers = mutableMapOf<Class<*>, NBTSerializer>()
+    val customSerializers = mutableMapOf<Class<*>, NBTSerializer<*>>()
 
     /**
      * Serializes a value to a CompoundTag, it supports:

@@ -58,7 +58,7 @@ open class WidgetBuilder<State> : WidgetDefinition<State>, WidgetHolder {
     override val children = mutableListOf<WidgetBuilder<*>>()
 
     override var onCreate: (() -> State)? = null
-    override var onRender: (WidgetCtx.(State, GuiRenderer) -> Unit)? = null
+    override var onRender: (WidgetCtx.(State, renderer: GuiRenderer) -> Unit)? = null
 }
 
 interface Widget<State> {

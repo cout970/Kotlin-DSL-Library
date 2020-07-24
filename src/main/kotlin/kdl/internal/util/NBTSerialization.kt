@@ -26,7 +26,7 @@ object NBTSerializationImpl {
         val clazz = value.javaClass
 
         if (clazz in NBTSerialization.customSerializers) {
-            val serializer = NBTSerialization.customSerializers[clazz]!!
+            val serializer = NBTSerialization.customSerializers[clazz] as NBTSerializer<Any?>
 
             tag.putByte(KEY_TYPE, TYPE_CUSTOM)
             tag.putString(KEY_CLASS, clazz.canonicalName)
@@ -73,7 +73,7 @@ object NBTSerializationImpl {
             TYPE_TAG -> value!!
             TYPE_CUSTOM -> {
                 val serializer = NBTSerialization.customSerializers[Class.forName(clazz)]!!
-                serializer.deserialize(value as CompoundTag)
+                serializer.deserialize(value as CompoundTag) as Any
             }
             TYPE_NBT_SERIALIZABLE -> {
                 val arguments = value as CompoundTag
@@ -105,19 +105,24 @@ object NBTSerializationImpl {
     }
 
     init {
-        NBTSerialization.customSerializers[ItemStack::class.java] = object : NBTSerializer {
-            override fun serialize(value: Any): CompoundTag {
-                return (value as ItemStack).toTag(CompoundTag())
+        NBTSerialization.customSerializers[Unit::class.java] = object : NBTSerializer<Unit> {
+            override fun serialize(value: Unit): CompoundTag = CompoundTag()
+
+            override fun deserialize(tag: CompoundTag): Unit = Unit
+        }
+
+        NBTSerialization.customSerializers[ItemStack::class.java] = object : NBTSerializer<ItemStack> {
+            override fun serialize(value: ItemStack): CompoundTag {
+                return value.toTag(CompoundTag())
             }
 
-            override fun deserialize(tag: CompoundTag): Any {
+            override fun deserialize(tag: CompoundTag): ItemStack {
                 return ItemStack.fromTag(tag)
             }
         }
 
-        NBTSerialization.customSerializers[SimpleInventory::class.java] = object : NBTSerializer {
-            override fun serialize(value: Any): CompoundTag {
-                value as SimpleInventory
+        NBTSerialization.customSerializers[SimpleInventory::class.java] = object : NBTSerializer<SimpleInventory> {
+            override fun serialize(value: SimpleInventory): CompoundTag {
                 val tag = CompoundTag()
                 tag.putInt("Size", value.size())
 
@@ -128,7 +133,7 @@ object NBTSerializationImpl {
                 return tag
             }
 
-            override fun deserialize(tag: CompoundTag): Any {
+            override fun deserialize(tag: CompoundTag): SimpleInventory {
                 val size = tag.getInt("Size")
                 val value = SimpleInventory(size)
 

@@ -1,17 +1,22 @@
 package kdl.api.gui
 
+import kdl.api.gui.widgets.WidgetCtx
+import kdl.api.util.Color
 import kdl.api.util.id
 import kdl.api.util.math.vec2Of
+import net.minecraft.client.font.TextRenderer
 import net.minecraft.client.texture.Sprite
+import net.minecraft.client.texture.TextureManager
 import net.minecraft.client.util.math.MatrixStack
 import net.minecraft.item.ItemStack
 import net.minecraft.util.Identifier
 import net.minecraft.util.math.Vec2f
-import java.awt.Color
 
 interface GuiRenderer {
 
     val matrices: MatrixStack
+    val textureManager: TextureManager
+    val textRenderer: TextRenderer
 
     fun draw(shape: Renderable)
 
@@ -53,10 +58,15 @@ sealed class Renderable {
     data class Text(
         var pos: Pos,
         var string: String = "",
-        var color: Color,
+        var color: Color = Color.BLACK,
         var shade: Boolean = false,
         var align: HAlignment = HAlignment.Left,
         var hover: Boolean = false
+    ) : Renderable()
+
+    /* A custom element */
+    data class Custom(
+        var func: (WidgetCtx, GuiRenderer) -> Unit
     ) : Renderable()
 
     /* Ordered list of items to render together */

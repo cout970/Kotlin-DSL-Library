@@ -2,6 +2,7 @@ package kdl.internal.block
 
 import kdl.api.block.*
 import kdl.api.module.InventoryState
+import kdl.api.util.getModule
 import kdl.api.util.id
 import kdl.internal.block.blockentity.KDLBlockEntity
 import kdl.internal.registries.InstanceManager
@@ -198,8 +199,8 @@ open class KDLBlock(settings: Settings) : Block(settings), InventoryProvider {
 
     override fun getInventory(state: BlockState, world: WorldAccess, pos: BlockPos): SidedInventory? {
         val blockEntity = (world.getBlockEntity(pos) as? KDLBlockEntity) ?: return null
-        val module = blockEntity.moduleManager.modules[id("kdl", "inventory")] ?: return null
-        val inv = (module as InventoryState).inventory
+        val module = blockEntity.getModule<InventoryState>(id("kdl", "inventory")) ?: return null
+        val inv = module.state
 
         class SInventory(val inv: SimpleInventory) : Inventory by inv, SidedInventory {
             override fun canExtract(slot: Int, stack: ItemStack?, dir: Direction): Boolean = true
