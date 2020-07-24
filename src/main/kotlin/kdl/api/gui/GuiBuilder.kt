@@ -40,11 +40,10 @@ data class ScreenHandlerCtx(
 
 @KDL
 class ScreenHandlerBuilder {
-    var onInit: ((ScreenHandlerCtx) -> Unit)? = null
-    var onClose: ((ScreenHandlerCtx) -> Unit)? = null
-    var serverWritePacket: ((ScreenHandlerCtx, ServerPlayerEntity, params: Array<out Any?>, PacketByteBuf) -> Unit)? =
-        null
-    var clientReadPacket: ((ScreenHandlerCtx, PacketByteBuf) -> Unit)? = null
+    var onInit: (ScreenHandlerCtx.() -> Unit)? = null
+    var onClose: (ScreenHandlerCtx.() -> Unit)? = null
+    var serverWritePacket: (ScreenHandlerCtx.(ServerPlayerEntity, Array<out Any?>, PacketByteBuf) -> Unit)? = null
+    var clientReadPacket: (ScreenHandlerCtx.(PacketByteBuf) -> Unit)? = null
     val slots = Deferred<SlotBuilder.(ScreenHandlerCtx) -> Unit>()
     val regions = Deferred<RegionBuilder.(ScreenHandlerCtx) -> Unit>()
 
