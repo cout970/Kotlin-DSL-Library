@@ -1,4 +1,5 @@
-import example_mod.ExampleModRef
+package example_mod
+
 import kdl.api.item.ItemSpriteModel
 
 fun items() = ExampleModRef.items {

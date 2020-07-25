@@ -1,6 +1,5 @@
 package example_mod
 
-import blocks
 import items
 import kdl.api.API
 import kdl.api.IModReference

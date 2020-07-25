@@ -1,6 +1,5 @@
-import example_mod.ExampleModRef
-import example_mod.States
-import example_mod.customModule
+package example_mod
+
 import kdl.api.item.BlockCubeModel
 import kdl.api.util.id
 
