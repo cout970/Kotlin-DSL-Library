@@ -1,5 +1,5 @@
 # Kotlin DSL Library (KDL)
-Any minecraft modding library to do the heavy lifting for you.
+A minecraft modding library to do the heavy lifting for you.
 
 Based on [KDS](https://github.com/cout970/KDS) but without scripts
 
