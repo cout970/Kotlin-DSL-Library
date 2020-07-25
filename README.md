@@ -9,22 +9,22 @@ Check a complete rewrite of the vanilla furnace with this library [here](src/exa
 This is an [example](src/examples/kotlin/example_mod/Blocks.kt) of a simple block with a cube model, a texture, a blockitem and a localized name. 
 ```kotlin
 block {
-        name = "magic_dirt"
-        material = id("minecraft", "dirt")
+    name = "magic_dirt"
+    material = id("minecraft", "dirt")
 
-        item {
-            defaultLocalizedName = "Magic Dirt"
-            display = BlockCubeModel("blocks/magic_dirt")
-        }
+    item {
+        defaultLocalizedName = "Magic Dirt"
+        display = BlockCubeModel("blocks/magic_dirt")
+    }
 
-        blockState {
-            model {
-                variant("") {
-                    display = BlockCubeModel("blocks/magic_dirt")
-                }
+    blockState {
+        model {
+            variant("") {
+                display = BlockCubeModel("blocks/magic_dirt")
             }
         }
     }
+}
 ```
 
 ### Need help?
