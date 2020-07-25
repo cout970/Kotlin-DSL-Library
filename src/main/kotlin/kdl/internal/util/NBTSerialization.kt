@@ -1,5 +1,8 @@
 package kdl.internal.util
 
+import com.google.gson.Gson
+import com.google.gson.GsonBuilder
+import kdl.api.util.GsonSerializable
 import kdl.api.util.NBTSerializable
 import kdl.api.util.NBTSerialization
 import kdl.api.util.NBTSerializer
@@ -7,6 +10,7 @@ import net.minecraft.inventory.SimpleInventory
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.ByteArrayTag
 import net.minecraft.nbt.CompoundTag
+import net.minecraft.nbt.StringTag
 import net.minecraft.nbt.Tag
 import java.io.*
 
@@ -18,8 +22,11 @@ private const val TYPE_TAG = 0.toByte()
 private const val TYPE_CUSTOM = 1.toByte()
 private const val TYPE_NBT_SERIALIZABLE = 2.toByte()
 private const val TYPE_SERIALIZABLE = 3.toByte()
+private const val TYPE_GSON_SERIALIZABLE = 4.toByte()
 
 object NBTSerializationImpl {
+
+    val GSON: Gson = GsonBuilder().create()
 
     fun serialize(value: Any): CompoundTag {
         val tag = CompoundTag()
@@ -51,6 +58,10 @@ object NBTSerializationImpl {
                         subTag.put(field, serialize(subValue))
                 }
                 tag.put(KEY_VALUE, subTag)
+            }
+            is GsonSerializable -> {
+                tag.putByte(KEY_TYPE, TYPE_GSON_SERIALIZABLE)
+                tag.putString(KEY_VALUE, GSON.toJson(value))
             }
             is Serializable -> {
                 val bytes = ByteArrayOutputStream()
@@ -87,6 +98,10 @@ object NBTSerializationImpl {
                     sortedArguments += deserialize(arguments.getCompound(prop.name))
                 }
                 primary.newInstance(sortedArguments)
+            }
+            TYPE_GSON_SERIALIZABLE -> {
+                val json = (value as StringTag).asString()
+                GSON.fromJson(json, Class.forName(clazz))
             }
             TYPE_SERIALIZABLE -> {
                 val bytes = ByteArrayInputStream((value as ByteArrayTag).byteArray)

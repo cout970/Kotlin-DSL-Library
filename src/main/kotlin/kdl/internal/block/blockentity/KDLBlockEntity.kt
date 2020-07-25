@@ -2,11 +2,14 @@ package kdl.internal.block.blockentity
 
 import kdl.api.block.BlockEntityBuilder
 import kdl.api.block.blockentity.*
+import kdl.api.util.GsonSerializable
+import kdl.api.util.NBTSerializable
 import kdl.api.util.NBTSerialization
 import net.minecraft.block.BlockState
 import net.minecraft.block.entity.BlockEntity
 import net.minecraft.block.entity.BlockEntityType
 import net.minecraft.nbt.CompoundTag
+import net.minecraft.nbt.Tag
 import net.minecraft.network.packet.s2c.play.BlockEntityUpdateS2CPacket
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.util.Identifier
@@ -14,6 +17,7 @@ import net.minecraft.util.Tickable
 import net.minecraft.util.math.BlockPos
 import net.minecraft.util.registry.Registry
 import net.minecraft.world.World
+import java.io.Serializable
 
 open class KDLBlockEntity(val config: BlockEntityBuilder) : BlockEntity(type(config)), ModuleManager {
 
@@ -72,6 +76,16 @@ open class KDLBlockEntity(val config: BlockEntityBuilder) : BlockEntity(type(con
                 state = state.store()
             }
 
+            if (state == Unit) return@forEach
+
+            if (state !is NBTSerializable &&
+                state !is Serializable &&
+                state !is Tag &&
+                state !is GsonSerializable &&
+                state.javaClass !in NBTSerialization.customSerializers){
+                return@forEach
+            }
+
             val value = NBTSerialization.serialize(state)
             tag.put(id.toString(), value)
         }
@@ -84,13 +98,23 @@ open class KDLBlockEntity(val config: BlockEntityBuilder) : BlockEntity(type(con
             if (!tag.contains(id.toString())) return@forEach
 
             val nbtValue = tag.getCompound(id.toString())
-            val value = NBTSerialization.deserialize(nbtValue)
+            val state = NBTSerialization.deserialize(nbtValue)
+
+            if (state == Unit) return@forEach
+
+            if (state !is NBTSerializable &&
+                state !is Serializable &&
+                state !is Tag &&
+                state !is GsonSerializable &&
+                state.javaClass !in NBTSerialization.customSerializers){
+                return@forEach
+            }
 
             if (mod.state is PersistentState<*>) {
                 @Suppress("UNCHECKED_CAST")
-                (mod.state as PersistentState<Any>).restore(value)
+                (mod.state as PersistentState<Any>).restore(state)
             } else {
-                mod.state = value
+                mod.state = state
             }
         }
     }

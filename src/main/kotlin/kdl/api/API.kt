@@ -1,8 +1,6 @@
 package kdl.api
 
-import kdl.api.registries.IRegistries
 import kdl.internal.ModReference
-import kdl.internal.registries.Registries
 
 object API {
 
@@ -25,9 +23,4 @@ object API {
             description = config.description ?: ""
         )
     }
-
-    /**
-     * List of game registries
-     */
-    fun registries(): IRegistries = Registries
 }

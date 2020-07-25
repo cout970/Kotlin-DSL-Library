@@ -8,7 +8,7 @@ import kdl.api.gui.SlotBuilder
 import kdl.api.module.InventoryState
 import kdl.api.util.getModule
 import kdl.api.util.id
-import kdl.internal.registries.Registries
+import net.minecraft.block.entity.BlockEntity
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.entity.player.PlayerInventory
 import net.minecraft.inventory.Inventory
@@ -17,6 +17,7 @@ import net.minecraft.screen.ScreenHandler
 import net.minecraft.screen.ScreenHandlerType
 import net.minecraft.screen.slot.Slot
 import net.minecraft.util.math.BlockPos
+import net.minecraft.util.registry.Registry
 
 class KDLScreenHandler(
     config: GuiBuilder,
@@ -24,6 +25,11 @@ class KDLScreenHandler(
     val playerInventory: PlayerInventory,
     var blockPos: BlockPos? = null
 ) : ScreenHandler(typeOf(config), syncId), SlotBuilder, RegionBuilder {
+
+    val blockEntity: BlockEntity? = blockPos?.let {
+        playerInventory.player.world
+            .getBlockEntity(blockPos)
+    }
 
     val blockInventory: Inventory? = blockPos?.let {
         playerInventory.player.world
@@ -38,7 +44,8 @@ class KDLScreenHandler(
             playerInventory,
             playerInventory.player.world,
             blockPos,
-            blockInventory
+            blockInventory,
+            blockEntity
         )
 
     val config = config.screenHandlerConfig
@@ -50,6 +57,10 @@ class KDLScreenHandler(
         this.config.regions.execute { it(ctx) }
     }
 
+    override fun sendContentUpdates() {
+        super.sendContentUpdates()
+    }
+
     override fun close(player: PlayerEntity?) {
         super.close(player)
         config.onClose?.invoke(ctx)
@@ -59,7 +70,10 @@ class KDLScreenHandler(
         return super.addSlot(slot)
     }
 
-    override fun canUse(player: PlayerEntity?): Boolean = true
+    override fun canUse(player: PlayerEntity?): Boolean {
+        config.onTick?.invoke(ctx)
+        return true
+    }
 
     override fun slot(
         inv: Inventory,
@@ -71,14 +85,6 @@ class KDLScreenHandler(
         filter: (ItemStack) -> Boolean
     ) {
         addSlot(KDLSlot(inv, index, posX, posY, canTake, canPlace, filter))
-    }
-
-    override fun slotArea(inv: Inventory, startIndex: Int, cols: Int, rows: Int, posX: Int, posY: Int) {
-        repeat(3) { i ->
-            repeat(9) { j ->
-                addSlot(KDLSlot(inv, j + i * 9 + startIndex, posX + j * 18, posY + i * 18))
-            }
-        }
     }
 
     override fun playerInventory(posX: Int, posY: Int, main: Boolean, hotbar: Boolean) {
@@ -146,6 +152,6 @@ class KDLScreenHandler(
 
 private fun typeOf(config: GuiBuilder): ScreenHandlerType<KDLScreenHandler> {
     @Suppress("UNCHECKED_CAST")
-    return Registries.screenHandler[config.id!!] as ScreenHandlerType<KDLScreenHandler>
+    return Registry.SCREEN_HANDLER[config.id!!] as ScreenHandlerType<KDLScreenHandler>
 }
 

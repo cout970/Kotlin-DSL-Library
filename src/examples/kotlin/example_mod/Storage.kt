@@ -1,9 +1,8 @@
 package example_mod
 
-import kdl.api.registries.toBlock
-import kdl.api.registries.toItem
 import net.minecraft.block.Block
 import net.minecraft.item.Item
+import net.minecraft.util.registry.Registry
 
 object Storage {
 
@@ -14,6 +13,6 @@ object Storage {
     val STICK = item("stick")
     val STICK2 = item("stick2")
 
-    fun block(name: String): Block = ExampleModRef.id(name).toBlock()!!
-    fun item(name: String): Item = ExampleModRef.id(name).toItem()!!
+    fun block(name: String): Block = Registry.BLOCK.getOrEmpty(ExampleModRef.id(name)).get()
+    fun item(name: String): Item = Registry.ITEM.getOrEmpty(ExampleModRef.id(name)).get()
 }

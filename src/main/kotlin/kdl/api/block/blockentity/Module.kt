@@ -34,28 +34,19 @@ interface ModuleDefinition<State> {
     val onBreak: (ModuleCtx.(State) -> Unit)?
 }
 
-interface ModuleState {
-    /**
-     * Value automatically serialized and deserialized on save/load
-     *
-     * You can write a custom serializer [NBTSerialization]
-     */
-    var persistentState: Any?
-        get() = null
-        set(_) {}
-
-    /**
-     * Value automatically serialized and deserialized to be send from server to client
-     *
-     * You must call ModuleManager.sendUpdateToNearPlayers()
-     */
-    var syncState: Any?
-        get() = null
-        set(_) {}
-}
-
 /**
- * Allows a module customize which part of the state to be saved
+ * Allows a module to customize which part of the state to be saved,
+ * if the state doesn't implement this interface, all the state will be selected
+ *
+ * Once a part of the state is selected to be saved a check is made for the following interfaces:
+ * - [java.io.Serializable]
+ * - [kdl.api.util.NBTSerializable]
+ * - [kdl.api.util.GsonSerializable]
+ * - [net.minecraft.nbt.Tag]
+ *
+ * If none is found an extra check is made for custom serializes in NBTSerialization
+ *
+ * If all checks fail, the state is not saved
  *
  * See also [NBTSerialization]
  */

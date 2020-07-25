@@ -16,6 +16,7 @@ import net.minecraft.world.BlockView
 import net.minecraft.world.World
 import net.minecraft.world.WorldAccess
 import net.minecraft.world.explosion.Explosion
+import java.util.*
 
 class BlockOnUse(
     var result: ActionResult,
@@ -148,4 +149,13 @@ class BlockPlacementState(
     var result: BlockState?,
     val block: Block,
     val ctx: ItemPlacementContext
+)
+
+class BlockOnRandomDisplayTick(
+    var preventDefault: Boolean,
+    val block: Block,
+    val state: BlockState,
+    val world: World,
+    val pos: BlockPos,
+    val random: Random
 )

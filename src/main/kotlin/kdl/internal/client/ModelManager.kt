@@ -14,12 +14,12 @@ import net.minecraft.util.Identifier
 
 object ModelManager {
     private val GSON = Gson()
-    private val customModels = mutableMapOf<Identifier, JsonUnbakedModel>()
+    private val customModels = mutableMapOf<String, JsonUnbakedModel>()
     private val customBlockstateModels = mutableMapOf<Identifier, (ModelIdentifier, BlockState) -> UnbakedModel?>()
     private val customTexturePaths = mutableMapOf<Identifier, Identifier>()
 
     fun getCustomModel(id: Identifier): JsonUnbakedModel? {
-        return customModels[id]
+        return customModels[id.toString()]
     }
 
     fun getBlockstateConfig(id: Identifier): ((ModelIdentifier, BlockState) -> UnbakedModel?)? {
@@ -28,14 +28,14 @@ object ModelManager {
 
     fun getCustomTexturePath(id: Identifier): Identifier? = customTexturePaths[id]
 
-    fun removeItemModel(id: Identifier) = customModels.remove(id)
+    fun removeItemModel(id: Identifier) = customModels.remove(id.toString())
 
     fun registerTexturePath(namespace: String, path: String) {
         val id = Identifier(namespace, path)
         customTexturePaths[id] = Identifier(namespace, "$path.png")
     }
 
-    fun registerItemSprite(id: Identifier, path: String, item: Boolean): Identifier {
+    fun registerItemSprite(id: Identifier, path: String, item: Boolean, variant: String?): Identifier {
 
         val jsonModel = JsonModel()
         jsonModel.parent = "minecraft:item/handheld"
@@ -46,12 +46,16 @@ object ModelManager {
 
         registerTexturePath(id.namespace, path)
 
-        val modelPath = if (item)
+        var modelPath = if (item)
             Identifier(id.namespace, "item/${id.path}")
         else
             Identifier(id.namespace, "blocks/${id.path}")
 
-        customModels[modelPath] = model
+        if (variant != null) {
+            modelPath = Identifier(modelPath.namespace, modelPath.path + "_" + variant)
+        }
+
+        customModels[modelPath.toString()] = model
         return modelPath
     }
 
@@ -63,7 +67,7 @@ object ModelManager {
         return Identifier(mod.namespace, path)
     }
 
-    fun registerBlockCube(id: Identifier, blockCube: BlockCubeModel, item: Boolean): Identifier {
+    fun registerBlockCube(id: Identifier, blockCube: BlockCubeModel, item: Boolean, variant: String?): Identifier {
 
         val particle = idOf(id, blockCube.particle)
         val down = idOf(id, blockCube.down)
@@ -94,16 +98,20 @@ object ModelManager {
         registerTexturePath(south.namespace, south.path)
         registerTexturePath(west.namespace, west.path)
 
-        val modelPath = if (item)
+        var modelPath = if (item)
             Identifier(id.namespace, "item/${id.path}")
         else
             Identifier(id.namespace, "blocks/${id.path}")
 
-        customModels[modelPath] = model
+        if (variant != null) {
+            modelPath = Identifier(modelPath.namespace, modelPath.path + "_" + variant)
+        }
+
+        customModels[modelPath.toString()] = model
         return modelPath
     }
 
-    fun registerCustomModel(id: Identifier, jsonModel: JsonModel, item: Boolean): Identifier {
+    fun registerCustomModel(id: Identifier, jsonModel: JsonModel, item: Boolean, variant: String?): Identifier {
 
         val model = JsonUnbakedModel.deserialize(GSON.toJson(jsonModel))
         model.id = id.toString()
@@ -112,20 +120,24 @@ object ModelManager {
             registerTexturePath(id.namespace, Identifier(path).path)
         }
 
-        val modelPath = if (item)
+        var modelPath = if (item)
             Identifier(id.namespace, "item/${id.path}")
         else
             Identifier(id.namespace, "blocks/${id.path}")
 
-        customModels[modelPath] = model
+        if (variant != null) {
+            modelPath = Identifier(modelPath.namespace, modelPath.path + "_" + variant)
+        }
+
+        customModels[modelPath.toString()] = model
         return modelPath
     }
 
-    fun registerDisplay(id: Identifier, display: DisplayModel?, item: Boolean): Identifier? {
+    fun registerDisplay(id: Identifier, display: DisplayModel?, item: Boolean, variant: String? = null): Identifier? {
         return when (display) {
-            is ItemSpriteModel -> registerItemSprite(id, display.path, item)
-            is BlockCubeModel -> registerBlockCube(id, display, item)
-            is CustomDisplayModel -> registerCustomModel(id, display.model, item)
+            is ItemSpriteModel -> registerItemSprite(id, display.path, item, variant)
+            is BlockCubeModel -> registerBlockCube(id, display, item, variant)
+            is CustomDisplayModel -> registerCustomModel(id, display.model, item, variant)
             null -> {
                 removeItemModel(id)
                 null

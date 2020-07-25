@@ -11,6 +11,13 @@ import net.minecraft.nbt.CompoundTag
 interface NBTSerializable
 
 /**
+ * This interface marks classes that can be serialized and deserialized to JSON using reflection (GSON).
+ *
+ * All the GSON serialization rules apply
+ */
+interface GsonSerializable
+
+/**
  * Allows custom serializers for any class
  */
 interface NBTSerializer<T> {

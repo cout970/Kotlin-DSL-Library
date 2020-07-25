@@ -30,6 +30,7 @@ import net.minecraft.world.BlockView
 import net.minecraft.world.World
 import net.minecraft.world.WorldAccess
 import net.minecraft.world.explosion.Explosion
+import java.util.*
 
 open class KDLBlock(settings: Settings) : Block(settings), InventoryProvider {
     lateinit var config: BlockBuilder
@@ -195,6 +196,14 @@ open class KDLBlock(settings: Settings) : Block(settings), InventoryProvider {
             return BlockPlacementState(default, this, ctx).apply(func).result
         }
         return default
+    }
+
+    override fun randomDisplayTick(state: BlockState, world: World, pos: BlockPos, random: Random) {
+        config.onRandomDisplayTick?.let { func ->
+            val event = BlockOnRandomDisplayTick(false, this, state, world, pos, random).apply(func)
+            if (event.preventDefault) return
+        }
+        super.randomDisplayTick(state, world, pos, random)
     }
 
     override fun getInventory(state: BlockState, world: WorldAccess, pos: BlockPos): SidedInventory? {

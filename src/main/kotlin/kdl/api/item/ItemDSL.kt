@@ -31,7 +31,7 @@ sealed class DisplayModel
 
 class ItemSpriteModel(val path: String) : DisplayModel()
 
-class BlockCubeModel(
+data class BlockCubeModel(
     val up: String,
     val down: String,
     val north: String,

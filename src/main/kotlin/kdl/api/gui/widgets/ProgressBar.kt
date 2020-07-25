@@ -41,7 +41,8 @@ fun WidgetHolder.horizontalProgressBar(config: ProgressBarWidgetBuilder.() -> Un
         }
         onRender = { state, renderer ->
             val size = renderer.getSize(builder.size)
-            val progress = builder.progressGetter()
+            val progress: Float = (builder.progressGetter() * size.x).toInt() / size.x
+
             val u = progress * builder.textureUVSize.x / builder.textureSize
             val sizeX = size.x * progress
 
@@ -70,10 +71,11 @@ fun WidgetHolder.verticalProgressBar(config: ProgressBarWidgetBuilder.() -> Unit
         onRender = { state, renderer ->
             val pos = renderer.getPos(builder.pos)
             val size = renderer.getSize(builder.size)
-            val progress = builder.progressGetter()
 
             val basePosY = builder.textureUV.y / builder.textureSize
             val baseSizeY = builder.textureUVSize.y / builder.textureSize
+
+            val progress: Float = (builder.progressGetter() * size.y).toInt() / size.y
 
             val posY = pos.y + size.y * (1f - progress)
             val sizeY = size.y * progress

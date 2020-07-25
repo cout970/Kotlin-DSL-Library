@@ -63,6 +63,7 @@ class BlockBuilder {
     var onStateReplaced: (BlockOnStateReplaced.() -> Unit)? = null
     var onSyncedBlockEvent: (BlockOnSyncedBlockEvent.() -> Unit)? = null
     var placementState: (BlockPlacementState.() -> Unit)? = null
+    var onRandomDisplayTick: (BlockOnRandomDisplayTick.() -> Unit)? = null
 
     fun item(func: ItemBuilder.() -> Unit) {
         val builder = blockItem ?: ItemBuilder()
@@ -103,7 +104,7 @@ class BlockEntityBuilder {
     fun <T> module(func: ModuleBuilder<T>.() -> Unit) {
         val dsl = ModuleBuilder<T>().apply(func)
         if (dsl.moduleType == null) {
-            error("Module defined without id")
+            error("Module defined without moduleType")
         }
         modules[dsl.type] = dsl
     }

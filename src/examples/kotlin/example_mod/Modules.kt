@@ -1,7 +1,6 @@
 package example_mod
 
 import kdl.api.block.BlockEntityBuilder
-import kdl.api.block.blockentity.ModuleState
 import kdl.api.util.findProperty
 import net.minecraft.util.StringIdentifiable
 import java.io.Serializable
@@ -14,7 +13,7 @@ enum class States : StringIdentifiable {
 }
 
 fun BlockEntityBuilder.customModule() {
-    data class Counter(var count: Int = 0) : Serializable, ModuleState
+    data class Counter(var count: Int = 0) : Serializable
 
     module<Counter> {
         moduleType = ExampleModRef.id("custom_module")

@@ -14,7 +14,7 @@ import kdl.internal.gui.KDLScreen
 import kdl.internal.gui.KDLScreenHandler
 import kdl.internal.item.KDLBlockItem
 import kdl.internal.registries.InstanceManager
-import kdl.internal.registries.Registries
+import kdl.internal.registries.KDLRegistries
 import net.fabricmc.fabric.api.client.screenhandler.v1.ScreenRegistry
 import net.fabricmc.fabric.api.screenhandler.v1.ScreenHandlerRegistry
 import net.minecraft.block.AbstractBlock
@@ -47,7 +47,7 @@ class KDLBlockDSL(private val ref: ModReference) : BlockDSL {
         val id = Identifier(ref.modid, builder.name)
 
         if (!Registry.BLOCK.ids.contains(id)) {
-            val material = Registries.materialRegistry[builder.material!!] ?: Material.STONE
+            val material = KDLRegistries.material[builder.material!!] ?: Material.STONE
             val settings = AbstractBlock.Settings.of(material)
 
             val block = InstanceManager.newKDLBlock(id, builder, settings, builder.blockEntityConfig != null)
@@ -133,12 +133,12 @@ class KDLBlockDSL(private val ref: ModReference) : BlockDSL {
         variants: Map<String, MutableList<BlockstateVariantBuilder>>
     ): (ModelIdentifier, BlockState) -> UnbakedModel? {
         val map = mutableMapOf<String, UnbakedModel>()
+        var index = 0
 
         variants.forEach { (name, models) ->
-
             val modelVariants = models.mapNotNull { variant ->
 
-                ModelManager.registerDisplay(id, variant.display, false)?.let { modelId ->
+                ModelManager.registerDisplay(id, variant.display, false, index.toString())?.let { modelId ->
                     val rot = variant.rotation?.toAffineTransformation() ?: ModelRotation.X0_Y0.rotation
 
                     ModelVariant(modelId, rot, variant.uvLock, 1)
@@ -146,6 +146,7 @@ class KDLBlockDSL(private val ref: ModReference) : BlockDSL {
             }
 
             map[name] = WeightedUnbakedModel(modelVariants)
+            index++
         }
 
         return { modelId, _ -> map[modelId.variant] }
