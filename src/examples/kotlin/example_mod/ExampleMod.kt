@@ -1,6 +1,5 @@
 package example_mod
 
-import items
 import kdl.api.API
 import kdl.api.IModReference
 import net.fabricmc.api.ModInitializer

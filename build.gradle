@@ -1,3 +1,5 @@
+import java.io.File
+
 plugins {
     id 'fabric-loom'
     id 'maven-publish'
@@ -88,8 +90,15 @@ publishing {
 
     // select the repositories you want to publish to
     repositories {
-        // uncomment to publish to the local maven
-        // mavenLocal()
+        mavenLocal()
+        maven {
+            url 'http://cout970.com/maven/minecraft'
+            String cred = new File("../maven_credentials.txt").text.trim()
+            credentials {
+                username(cred.split(":")[0])
+                password(cred.split(":")[1])
+            }
+        }
     }
 }
 
